@@ -1,0 +1,12 @@
+MATCH Query in FTS tables runs faster than LIKE query in normal tables. 
+
+Reasons -
+	
+	1. FTS tables are built-in full-text index tables thus providing faster query results.
+	
+	e.g. - 
+	
+	0,0,0,"SCAN TABLE movie_overview VIRTUAL TABLE INDEX 0:" - LIKE
+	0,0,0,"SCAN TABLE movie_overview VIRTUAL TABLE INDEX 5:" - MATCH
+	
+	2. With MATCH query, complete tokens are searched; LIKE looks for cases where query-text forms part of word.

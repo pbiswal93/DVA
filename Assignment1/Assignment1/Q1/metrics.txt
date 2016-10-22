@@ -1,0 +1,8 @@
+Average Node Degree - average number of edges coming out or going into the node for the graph : 2.024
+
+Average Directed Degree - (average number of edges coming out - average number of edges going into the nodes): 1.012
+
+Diameter- longest path length between any two nodes in the graph : 4
+
+Average Path Length - mean of all the path lengths between all pairs of nodes in the graph : 3.6214960058097314
+

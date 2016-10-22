@@ -1,0 +1,17 @@
+ci)
+
+1. I used Key collision for this dataset and found it better than KNN because - 
+
+	a) runs faster(~ 5 seconds) compared to KNN(~ 10 minutes).	
+	b) creates more meaningful clusters than KNN (Separates the Annual Banquet based on number like 15th, 23rd etc.)
+
+2. The main difference is number of clu
+
+
+iii)
+ nominal data - status
+ ordinal data - venue
+ 
+ 
+ 
+ v) One useful feature is splitting column into multiple columns. For address we generally follow this convention - "house no, street address, city, state". An example in this data is NEW YORK, NY(Place column). On separating the address, we can do queries on data based on individual tokens (city or state here).

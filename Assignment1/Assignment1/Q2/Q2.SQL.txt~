@@ -1,0 +1,31 @@
+create table movies(movie_id integer, name text, genre text);
+.table
+.separator %
+.import movies.txt movies
+select '';
+create table ratings(user_id integer, movie_id integer, rating real, timestamp integer) ;
+.import ratings.txt ratings
+select '';
+create index movies_primary_index on movies(movie_id);
+create index movies_secondary_index on ratings(movie_id);
+select '';
+.header on
+.mode csv
+select count(*) as movie_count from (select movie_id from ratings group by movie_id having count(user_id)>=500 and avg(rating)>=3.5);
+select '';
+select movies.movie_id as movie_id, name as movie_name, count(user_id) as review_count from movies join ratings on  movies.movie_id=ratings.movie_id group by movies.movie_id having review_count>=2500 order by review_count desc, name;
+select '';
+select movies.movie_id, name as movie_name, avg(rating) as avg_rating from movies join ratings on movies.movie_id=ratings.movie_id group by movies.movie_id order by avg_rating desc, movie_name limit 10;
+select '';
+select name as movie_name, avg(rating) as avg_rating, count(name) as review_count, genre as movie_genre from movies join ratings on movies.movie_id=ratings.movie_id group by movie_name having count(user_id)>=1000 order by avg_rating desc, movie_name, movie_genre limit 8;
+select '';
+create view if not exists common_interests AS select A.user_id as user_id1,B.user_id as user_id2 ,A.name as movie_name from (select name,movies.movie_id,user_id from ratings JOIN movies on ratings.movie_id=movies.movie_id where movies.movie_id in (select movie_id from ratings group by movie_id having count(user_id)=10) order by movies.movie_id) as A JOIN (select name,movies.movie_id,user_id from ratings JOIN movies on ratings.movie_id=movies.movie_id where movies.movie_id in (select movie_id from ratings group by movie_id having count(user_id)=10) order by movies.movie_id) as B on A.movie_id=B.movie_id  where A.user_id<B.user_id;
+select '';
+select count(*) as common_interest_count from common_interests;
+select '';
+select count(*) from movie_overview where overview MATCH 'death OR life';
+select '';
+select id from movie_overview where overview MATCH 'life about' EXCEPT select id from movie_overview where overview MATCH 'life NEAR/5 about';
+select '';
+select id from movie_overview where overview MATCH 'life' INTERSECT select id from movie_overview where overview MATCH 'about' EXCEPT select id from movie_overview where overview MATCH 'life NEAR/5 about';
+select '';

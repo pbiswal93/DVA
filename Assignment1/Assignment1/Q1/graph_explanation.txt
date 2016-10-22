@@ -1,0 +1,1 @@
+I used the Yifan Hu Proportional layout for representation. Size of nodes are reflective of the degree of node. The edges are thickened to see the follower and friend directionality. Only the prominent nodes have been labelled to remove clutter. Friends of friends and followers of followers are in a single cluster.

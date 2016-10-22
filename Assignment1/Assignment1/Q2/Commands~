@@ -1,0 +1,111 @@
+2a)
+
+create table movies(movie_id integer, name text, genre text);
+.table
+.separator %
+.import movies.txt movies
+
+create table ratings(user_id integer, movie_id integer, rating real, timestamp integer) ;
+# Separator already set in previous step
+.import ratings.txt ratings
+
+2b)
+
+create index movies_primary_index on movies(movie_id);
+create index movies_secondary_index on ratings(movie_id);
+
+2c)
+.header on
+.mode column
+select count(*) as movie_count from (select movie_id from ratings group by movie_id having count(user_id)>=500 and avg(rating)>=3.5);
+movie_count
+-----------
+423 
+
+2d)
+
+select movies.movie_id as movie_id, name as movie_name, count(user_id) as review_count from movies join ratings on movies.movie_id=ratings.movie_id group by movies.movie_id having review_count>=2500 order by review_count desc, name;
+movie_id    movie_name                                                              review_count   
+----------  ----------------------------------------------------------------------  ---------------
+2858        American Beauty (1999)                                                  3428           
+260         Star Wars: Episode IV - A New Hope (1977)                               2991           
+1196        Star Wars: Episode V - The Empire Strikes Back (1980)                   2990           
+1210        Star Wars: Episode VI - Return of the Jedi (1983)                       2883           
+480         Jurassic Park (1993)                                                    2672           
+2028        Saving Private Ryan (1998)                                              2653           
+589         Terminator 2: Judgment Day (1991)                                       2649           
+2571        Matrix, The (1999)                                                      2590           
+1270        Back to the Future (1985)                                               2583           
+593         Silence of the Lambs, The (1991)                                        2578           
+1580        Men in Black (1997)                                                     2538           
+1198        Raiders of the Lost Ark (1981)                                          2514           
+608         Fargo (1996)                                                            2513       
+
+2e)
+
+select movies.movie_id, name as movie_name, avg(rating) as avg_rating from movies join ratings on movies.movie_id=ratings.movie_id group by movies.movie_id order by avg_rating desc, movie_name limit 10;
+movie_id    movie_name                                                              avg_rating     
+----------  ----------------------------------------------------------------------  ---------------
+3280        Baby, The (1973)                                                        5.0            
+3881        Bittersweet Motel (2000)                                                5.0            
+1830        Follow the Bitch (1998)                                                 5.0            
+787         Gate of Heavenly Peace, The (1995)                                      5.0            
+3656        Lured (1947)                                                            5.0            
+3607        One Little Indian (1973)                                                5.0            
+989         Schlafes Bruder (Brother of Sleep) (1995)                               5.0            
+3233        Smashing Time (1967)                                                    5.0            
+3382        Song of Freedom (1936)                                                  5.0            
+3172        Ulysses (Ulisse) (1954)                                                 5.0    
+
+2f)
+
+select name as movie_name, avg(rating) as avg_rating, count(name) as review_count, genre as movie_genre from movies join ratings on movies.movie_id=ratings.movie_id group by movie_name having count(user_id)>=1000 order by avg_rating desc, movie_name, movie_genre limit 8;
+
+movie_name            avg_rating            review_count          movie_genre         
+--------------------  --------------------  --------------------  --------------------
+Shawshank Redemption  4.55455770094297      2227                  Drama               
+Godfather, The (1972  4.52496626180837      2223                  Action|Crime|Drama  
+Usual Suspects, The   4.5171060011217       1783                  Crime|Thriller      
+Schindler's List (19  4.51041666666667      2304                  Drama|War           
+Raiders of the Lost   4.47772474144789      2514                  Action|Adventure    
+Rear Window (1954)    4.47619047619048      1050                  Mystery|Thriller    
+Star Wars: Episode I  4.45369441658308      2991                  Action|Adventure|Fan
+Dr. Strangelove or:   4.44989027066569      1367                  Sci-Fi|War      
+
+
+2g) and 2h)
+
+sqlite> create view if not exists common_interests AS select A.user_id as user_id1,B.user_id as user_id2 ,A.name as movie_name from (select name,movies.movie_id,user_id from ratings JOIN movies on ratings.movie_id=movies.movie_id where movies.movie_id in (select movie_id from ratings group by movie_id having count(user_id)=10) order by movies.movie_id) as A JOIN (select name,movies.movie_id,user_id from ratings JOIN movies on ratings.movie_id=movies.movie_id where movies.movie_id in (select movie_id from ratings group by movie_id having count(user_id)=10) order by movies.movie_id) as B on A.movie_id=B.movie_id  where A.user_id<B.user_id;
+
+sqlite> select count(*) from common_interests;
+1215
+
+2i)
+
+CREATE VIRTUAL TABLE movie_overview USING fts3(id INTEGER, name TEXT, year INTEGER, overview TEXT, popularity decimal);
+.separator ,
+.import "movie-overview.txt" movie_overview
+
+1) 
+--select count(*) from (select * from movie_overview where overview MATCH 'death' UNION select * from movie_overview where overview MATCH 'life');
+63
+-------------------------------------
+select count(*) from movie_overview where overview MATCH 'death OR life';
+63
+
+2)
+
+select id from movie_overview where overview MATCH 'life about' EXCEPT select id from movie_overview where overview MATCH 'life NEAR/5 about';
+103
+103663
+10376
+20453
+37797
+
+select id from movie_overview where overview MATCH 'life' INTERSECT select id from movie_overview where overview MATCH 'about' EXCEPT select id from movie_overview where overview MATCH 'life NEAR/5
+
+2j)
+
+Write explanation...
+
+
