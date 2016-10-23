@@ -1,0 +1,9 @@
+i 2) Petal Length vs. Petal Width is better at separating classes. 
+Sepal length vs Sepal Width graph separates Setosa but 
+there is mixing in versicolor and virginica. Petal Length vs Petal Width scatterplot plots 
+all 3 classes in different regions.
+
+iii) In log scale plot, the linear plot is converged to a small region.
+So, the log scale is better when the data is skewed (possible outliers) 
+i.e. some values are very big or very small from bulk of data.
+

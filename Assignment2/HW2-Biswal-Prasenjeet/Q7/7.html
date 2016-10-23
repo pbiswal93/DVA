@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+}
+
+div.tooltip {	
+    position: absolute;			
+    text-align: center;			
+    width: 175px;					
+    height: 60px;					
+    padding: 2px;				
+    font: 12px sans-serif;		
+    background: lightsteelblue;	
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
+
+</style>
+
+<body>
+
+<script src="../lib/d3.v3.min.js"></script>
+<script>
+
+var margin = {top: 80, right: 50, bottom: 30, left: 70},
+    width = 960 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
+
+  
+var x = d3.scale.linear().range([0, width]);
+
+var y = d3.scale.linear().range([height, 0]);
+
+var xAxis = d3.svg.axis().scale(x).orient("bottom");//.innerTickSize(-height);
+
+var yAxis = d3.svg.axis().scale(y).orient("left");//.innerTickSize(-width);
+
+var svg = d3.select("body").append("svg").attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Median Earning vs. Net Average Price");
+
+var svg1 = d3.select("body").append("svg").attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+            svg1.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Average SAT Score vs. Net Average Price");
+
+var svg2 = d3.select("body").append("svg").attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+        svg2.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Fraction of Students receiving Pell Grants vs. Net Average Price");
+            
+/*
+var svg3 = d3.select("body").append("svg").attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var svg4 = d3.select("body").append("svg").attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+*/
+d3.csv("Most+Recent+Cohorts+(Scorecard+Elements).csv", function(error, schoolData){
+  if (error) throw error;
+console.log(schoolData.length);
+var count=0;
+schoolData = schoolData.filter(function(d){
+        if(isNaN(d.md_earn_wne_p10) ||(isNaN(d.NPT4_PUB) && isNaN(d.NPT4_PRIV))){
+            count=count+1;
+            return false;
+        }
+        if(isNaN(d.NPT4_PUB) )
+        	d.value = parseInt(d.NPT4_PRIV, 10);
+        else if(isNaN(d.NPT4_PRIV) )
+        	d.value=parseInt(d.NPT4_PUB,10);
+        if(d.value<0)
+        	return false;	
+        return true;
+    });
+    
+
+
+//    console.log(count);
+//+ sign is used for changing the string to numeric values
+//
+  schoolData.forEach(function(d) {
+    //console.log(isNaN(d.SATWR75));
+    //d.NPT4_PUB=+d.NPT4_PUB;
+    //d.NPT4_PRIV=+d.NPT4_PRIV;
+    d.NPT=d.value;
+    //console.log(d.NPT);
+    //console.log(d.NPT);
+    d.md_earn_wne_p10 = +d.md_earn_wne_p10;
+    });
+
+	    
+    	
+//	console.log(Math.max((schoolData, function(d) { return d.NPT; })));
+  x.domain(d3.extent(schoolData, function(d) { return d.NPT; })).nice();
+  //y.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+  y.domain(d3.extent(schoolData, function(d) { return d.md_earn_wne_p10; })).nice();
+
+	console.log(d3.extent(schoolData, function(d) { return d.NPT; }));
+		console.log(d3.extent(schoolData, function(d) { return d.md_earn_wne_p10; }));
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Net Average Price");
+
+//to remove the ticks
+ 
+//  svg.selectAll(".tick")
+//    .each(function (d) {
+//        if ( d == 0 ) {
+//            this.remove();
+//        }
+//    });
+
+var xmedian=d3.median(schoolData,function(d){return d.value;});
+    	var ymedian=d3.median(schoolData,function(d){return d.md_earn_wne_p10;});
+    	console.log(xmedian+ ","+ymedian);
+    	
+
+   
+  var div = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
+     
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Median Earning")
+      
+      svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Median Earning vs. Net Average Price");
+
+  svg.selectAll(".dot")
+      .data(schoolData)
+    .enter().append("circle")
+	.attr("class", "dot")
+    .attr("r", 3.5)
+    .attr("cx", function(d) { return x(d.NPT); })
+    .attr("cy", function(d) { return y(d.md_earn_wne_p10); })
+    .style("fill",function(d){if(d.NPT<=xmedian && d.md_earn_wne_p10>=ymedian) return "#00ff00";
+    							else if(d.NPT>xmedian && d.md_earn_wne_p10>=ymedian) return "#006600";
+    							else if(d.NPT>xmedian && d.md_earn_wne_p10<ymedian) return "#aa0000";
+    							else return "#0000ff";
+    							})
+    .attr("transform", function(d, i) { return "translate(0"+","+ 0 + ")"; })
+    .on("mouseover", function(d) {		
+            div.transition()		
+                .duration(200)		
+                .style("opacity", .9);		
+            div	.html(d.INSTNM + "<br/>"  + "Earning - "+d.md_earn_wne_p10 +" $"+ "<br/>"  + "Average Net Price - "+d.NPT +" $")	
+                .style("left", (d3.event.pageX) + "px")		
+                .style("top", (d3.event.pageY - 28) + "px");
+            })					
+        .on("mouseout", function(d) {		
+            div.transition()		
+                .duration(500)		
+                .style("opacity", 0);	
+        });
+
+	var color=["#00ff00", "#006600" , "#aa0000", "#0000ff"];
+  	var legend = svg.selectAll(".legend")
+      .data(color)
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  legend.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", function(d){return d;});
+
+console.log(color);
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) { if(d=="#00ff00") return "Very High Return on Investment"; 
+      					  else if (d=="#006600") return "Good Return on Investment (High Tution Fees)";
+      					  else if (d=="#aa0000") return "Very Low Return on Investment";
+      					  else return "Good Return on Investment (Low Median Earning	)"});  		
+  
+  
+});
+
+
+
+d3.csv("Most+Recent+Cohorts+(Scorecard+Elements).csv", function(error, schoolData){
+  if (error) throw error;
+console.log(schoolData.length);
+var count=0;
+schoolData = schoolData.filter(function(d){
+        if(isNaN(d.SAT_AVG_ALL) ||(isNaN(d.NPT4_PUB) && isNaN(d.NPT4_PRIV))){
+            count=count+1;
+            return false;
+        }
+        if(isNaN(d.NPT4_PUB) )
+        	d.value = parseInt(d.NPT4_PRIV, 10);
+        else if(isNaN(d.NPT4_PRIV) )
+        	d.value=parseInt(d.NPT4_PUB,10);
+        if(d.value<0)
+        	return false;	
+        return true;
+    });
+    
+
+
+//    console.log(count);
+//+ sign is used for changing the string to numeric values
+//
+  schoolData.forEach(function(d) {
+    //console.log(isNaN(d.SATWR75));
+    //d.NPT4_PUB=+d.NPT4_PUB;
+    //d.NPT4_PRIV=+d.NPT4_PRIV;
+    d.NPT=d.value;
+    //console.log(d.NPT);
+    //console.log(d.NPT);
+    d.SAT_AVG_ALL = +d.SAT_AVG_ALL;
+    });
+
+	    
+    	
+//	console.log(Math.max((schoolData, function(d) { return d.NPT; })));
+  x.domain(d3.extent(schoolData, function(d) { return d.NPT; })).nice();
+  //y.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+  y.domain(d3.extent(schoolData, function(d) { return d.SAT_AVG_ALL; })).nice();
+
+	console.log(d3.extent(schoolData, function(d) { return d.NPT; }));
+		console.log(d3.extent(schoolData, function(d) { return d.SAT_AVG_ALL; }));
+  svg1.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Net Average Price");
+
+//to remove the ticks
+ 
+//  svg.selectAll(".tick")
+//    .each(function (d) {
+//        if ( d == 0 ) {
+//            this.remove();
+//        }
+//    });
+
+var xmedian=d3.median(schoolData,function(d){return d.value;});
+    	var ymedian=d3.median(schoolData,function(d){return d.SAT_AVG_ALL;});
+    	console.log(xmedian+ ","+ymedian);
+    	
+
+   
+  var div = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
+     
+  svg1.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Average SAT Score")
+
+  svg1.selectAll(".dot")
+      .data(schoolData)
+    .enter().append("circle")
+	.attr("class", "dot")
+    .attr("r", 3.5)
+    .attr("cx", function(d) { return x(d.NPT); })
+    .attr("cy", function(d) { return y(d.SAT_AVG_ALL); })
+    .style("fill",function(d){if(d.NPT<=xmedian && d.SAT_AVG_ALL>=ymedian) return "#006600";
+    							else if(d.NPT>xmedian && d.SAT_AVG_ALL>=ymedian) return "#ff0000";
+    							else if(d.NPT>xmedian && d.SAT_AVG_ALL< ymedian) return "#0000ff";
+    							else return "#00ff00";
+    							})
+    .attr("transform", function(d, i) { return "translate(0"+","+ 0 + ")"; })
+    .on("mouseover", function(d) {		
+            div.transition()		
+                .duration(200)		
+                .style("opacity", .9);		
+            div	.html(d.INSTNM + "<br/>"  + "SAT Score - "+d.SAT_AVG_ALL + "<br/>"  + "Average Net Price - "+d.NPT +" $")	
+                .style("left", (d3.event.pageX) + "px")		
+                .style("top", (d3.event.pageY - 28) + "px");	
+            })					
+        .on("mouseout", function(d) {		
+            div.transition()		
+                .duration(500)		
+                .style("opacity", 0);	
+        });
+
+/*	    	svg1.append('line')
+    		.attr('x1',x(xmedian+100))
+		    .attr('x2',x(xmedian+100))
+		    .attr('y1',y(0))
+		    .attr('y2',y(120000))
+		    .style("stroke","red");
+    		
+    		svg1.append('line')
+    		.attr('x1',x(0))
+		    .attr('x2',x(80000))
+		    .attr('y1',y(ymedian))
+		    .attr('y2',y(ymedian))
+		    .style("stroke","red");
+  */
+  var color=["#00ff00", "#006600" , "#aa0000", "#0000ff"];
+  	var legend1 = svg1.selectAll(".legend")
+      .data(color)
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  legend1.append("rect")
+      .attr("x", width - 20)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", function(d){return d;});
+
+console.log(color);
+
+  legend1.append("text")
+      .attr("x", width - 22)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) { if(d=="#00ff00") return "Low SAT Score, Low Tution"; 
+      					  else if (d=="#006600") return "High SAT Score, Low Tution";
+      					  else if (d=="#aa0000") return "High SAT Score, High Tution";
+      					  else return "Low SAT Score, High Tution"});  		
+  
+  
+});
+
+
+d3.csv("Most+Recent+Cohorts+(Scorecard+Elements).csv", function(error, schoolData){
+  if (error) throw error;
+console.log(schoolData.length);
+var count=0;
+schoolData = schoolData.filter(function(d){
+        if(isNaN(d.PCTPELL) ||(isNaN(d.NPT4_PUB) && isNaN(d.NPT4_PRIV))){
+            count=count+1;
+            return false;
+        }
+        if(isNaN(d.NPT4_PUB) )
+        	d.value = parseInt(d.NPT4_PRIV, 10);
+        else if(isNaN(d.NPT4_PRIV) )
+        	d.value=parseInt(d.NPT4_PUB,10);
+        if(d.value<0)
+        	return false;	
+        return true;
+    });
+    
+
+
+//    console.log(count);
+//+ sign is used for changing the string to numeric values
+//
+  schoolData.forEach(function(d) {
+    //console.log(isNaN(d.SATWR75));
+    //d.NPT4_PUB=+d.NPT4_PUB;
+    //d.NPT4_PRIV=+d.NPT4_PRIV;
+    d.NPT=d.value;
+    //console.log(d.NPT);
+    //console.log(d.NPT);
+    d.PCTPELL = +d.PCTPELL;
+    });
+
+	    
+    	
+//	console.log(Math.max((schoolData, function(d) { return d.NPT; })));
+  x.domain(d3.extent(schoolData, function(d) { return d.NPT; })).nice();
+  //y.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+  y.domain(d3.extent(schoolData, function(d) { return 100*d.PCTPELL; })).nice();
+
+	console.log(d3.extent(schoolData, function(d) { return d.NPT; }));
+		console.log(d3.extent(schoolData, function(d) { return d.PCTPELL; }));
+  svg2.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Net Average Price");
+
+//to remove the ticks
+ 
+//  svg2.selectAll(".tick")
+//    .each(function (d) {
+//        if ( d == 0 ) {
+//            this.remove();
+//        }
+//    });
+
+var xmedian=d3.median(schoolData,function(d){return d.NPT;});
+    	var ymedian=d3.median(schoolData,function(d){return d.PCTPELL;});
+    	console.log(xmedian+ ","+ymedian);
+    	
+
+   
+  var div = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
+     
+  svg2.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("dy", "-.1000em")
+      .style("text-anchor", "end")
+      .text("Fraction of Students who receive PELL GRANTS")
+
+  svg2.selectAll(".dot")
+      .data(schoolData)
+    .enter().append("circle")
+	.attr("class", "dot")
+    .attr("r", 3.5)
+    .attr("cx", function(d) { return x(d.NPT); })
+    .attr("cy", function(d) { return y(d.PCTPELL*100); })
+    .style("fill",function(d){if(d.NPT<=xmedian && d.PCTPELL>=ymedian) return "#00ff00";
+    							else if(d.NPT>xmedian && d.PCTPELL>=ymedian) return "#006600";
+    							else if(d.NPT>xmedian && d.PCTPELL< ymedian) return "#aa0000";
+    							else return "#0000ff";
+    							})
+    .attr("transform", function(d, i) { return "translate(0"+","+ 0 + ")"; })
+    .on("mouseover", function(d) {		
+            div.transition()		
+                .duration(200)		
+                .style("opacity", .9);		
+            div	.html(d.INSTNM + "<br/>"  + "PELL GRANTS - "+d.PCTPELL*100 +" %" + "<br/>"  + "Average Net Price - "+d.NPT +" $")	
+                .style("left", (d3.event.pageX) + "px")		
+                .style("top", (d3.event.pageY - 28) + "px");	
+            })					
+        .on("mouseout", function(d) {		
+            div.transition()		
+                .duration(500)		
+                .style("opacity", 0);	
+        });
+
+svg2.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("dy", "-.1000em")
+      .style("text-anchor", "end")
+      .text("Percentage of Students who receive PELL GRANTS")
+/*	    	svg1.append('line')
+    		.attr('x1',x(xmedian+100))
+		    .attr('x2',x(xmedian+100))
+		    .attr('y1',y(0))
+		    .attr('y2',y(120000))
+		    .style("stroke","red");
+    		
+    		svg1.append('line')
+    		.attr('x1',x(0))
+		    .attr('x2',x(80000))
+		    .attr('y1',y(ymedian))
+		    .attr('y2',y(ymedian))
+		    .style("stroke","red");
+  */
+  var color=["#00ff00", "#006600" , "#aa0000", "#0000ff"];
+  	var legend2 = svg2.selectAll(".legend")
+      .data(color)
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  legend2.append("rect")
+      .attr("x", width - 100)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", function(d){return d;});
+
+console.log(color);
+
+  legend2.append("text")
+      .attr("x", width - 102)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d){ if(d=="#00ff00") return "High Pell Grants %, Low Tution"; 
+      					  else if (d=="#006600") return "High Pell Grants %, High Tution";
+      					  else if (d=="#aa0000") return "Low Pell Grants %, Low Tution";
+      					  else return "Low Pell Grants %, High Tution"});  		
+  
+  
+});
+
+
+
+</script>
+</body>
+</html>

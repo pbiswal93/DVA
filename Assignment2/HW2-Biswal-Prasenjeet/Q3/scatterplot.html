@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+}
+
+</style>
+
+<body>
+
+<script src="../lib/d3.v3.min.js"></script>
+<script>
+
+var margin = {top: 50, right: 50, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
+
+//color and shape arrays for different classes of leaves
+var colorArray={"setosa":"red","versicolor":"blue","virginica":"green"};
+var shapeArray={"setosa":"circle","versicolor":"square","virginica":"triangle-up"};
+  
+var x = d3.scale.linear().range([0, width]);
+var xsquareroot=d3.scale.sqrt().range([0, width]);
+var xlog=d3.scale.log().range([1,width]);
+//.base(Math.E)
+var y = d3.scale.linear().range([height, 0]);
+var ysquareroot=d3.scale.sqrt().range([height, 0]);
+var ylog=d3.scale.log().range([height,1]);
+//var color = d3.scale.category10();
+
+var xAxis = d3.svg.axis().scale(x).orient("bottom");//.innerTickSize(-height);
+var xAxissquareroot=d3.svg.axis().scale(xsquareroot).orient("bottom");
+var xAxislog=d3.svg.axis().scale(xlog).orient("bottom");
+
+var yAxis = d3.svg.axis().scale(y).orient("left");//.innerTickSize(-width);
+var yAxissquareroot=d3.svg.axis().scale(ysquareroot).orient("left");
+var yAxislog=d3.svg.axis().scale(ylog).orient("left");
+
+var svg = d3.select("body").append("svg").attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Sepal length vs. Sepal Width");
+
+var svg1 = d3.select("body").append("svg").attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+         svg1.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Petal length vs. Petal Width");
+
+var svg2 = d3.select("body").append("svg").attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+        svg2.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Sepal length vs. Sepal Width (Scaling nodes)");
+
+var svg3 = d3.select("body").append("svg").attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+        svg3.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Sepal length vs. Sepal Width (Square Root Scale)");
+
+var svg4 = d3.select("body").append("svg").attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+        svg4.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Sepal length vs. Sepal Width (Log Scale)");
+
+d3.tsv("iris.tsv", function(error, sepalData){
+  if (error) throw error;
+
+//+ sign is used for changing the string to numeric values
+  sepalData.forEach(function(d) {
+    console.log(d);
+    d.sepalLength = +d.sepalLength;
+    d.sepalWidth = +d.sepalWidth;
+  });
+
+
+  x.domain(d3.extent(sepalData, function(d) { return d.sepalLength; })).nice();
+  //y.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+  y.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Sepal Length (cm)");
+
+//to remove the ticks
+ 
+//  svg.selectAll(".tick")
+//    .each(function (d) {
+//        if ( d == 0 ) {
+//            this.remove();
+//        }
+//    });
+   
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Sepal Width (cm)")
+
+  svg.selectAll(".dot")
+      .data(sepalData)
+    .enter().append("path")
+    .attr("d", d3.svg.symbol().size( function(d) { return 30 ;}).type(function(d){
+        		return shapeArray[d.species];
+    	}))
+    .style("fill","none")
+    .style("stroke",function(d){return colorArray[d.species];})
+    .attr("transform", function(d) { return "translate(" + x(d.sepalLength) + "," + y(d.sepalWidth) + ")"; });
+    
+  
+  function legendAttributes(d)
+  {
+  	console.log("legend");
+  	console.log(d);
+  }
+
+  var legend = svg.selectAll(".legend")
+      .data(Object.keys(colorArray))
+    .enter().append("g")
+      .attr("class", "legend")
+      //.attr("d",d3.svg.symbol().type(function(d){return shapeArray[d];}))
+      /*.attr("x",width-60)
+      .attr("width",15)
+      .attr("height",15)
+      .style("fill", "none")
+      .style("stroke",function(d){return colorArray[d];})*/
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+      
+	console.log(Object.keys(colorArray));
+
+
+  
+  legend.append("rect")
+      .attr("x", width - 100)
+      .attr("y",15)
+      .attr("width", 15)
+      .attr("height", 15)
+      .style("fill", function(d){console.log(d);return colorArray[d];});
+      
+
+
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 20)
+      .attr("dy", ".45em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
+
+});
+
+
+
+
+
+d3.tsv("iris.tsv", function(error, petalData){
+  if (error) throw error;
+
+//+ sign is used for changing the string to numeric values
+  petalData.forEach(function(d) {
+    console.log(d);
+    d.petalLength = +d.petalLength;
+    d.petalWidth = +d.petalWidth;
+  });
+
+
+  x.domain(d3.extent(petalData, function(d) { return d.petalLength; })).nice();
+  //y.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+  y.domain(d3.extent(petalData, function(d) { return d.petalWidth; })).nice();
+
+  svg1.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Petal Length (cm)");
+
+//to remove the ticks
+ 
+//  svg.selectAll(".tick")
+//    .each(function (d) {
+//        if ( d == 0 ) {
+//            this.remove();
+//        }
+//    });
+   
+  svg1.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Petal Width (cm)")
+
+  svg1.selectAll(".dot")
+      .data(petalData)
+    .enter().append("path")
+    .attr("d", d3.svg.symbol().size( function(d) { return 30 ;}).type(function(d){
+        		return shapeArray[d.species];
+    	}))
+    .style("fill","none")
+    .style("stroke",function(d){return colorArray[d.species];})
+    .attr("transform", function(d) { return "translate(" + x(d.petalLength) + "," + y(d.petalWidth) + ")"; });
+    
+  
+  function legendAttributes(d)
+  {
+  	console.log("legend");
+  	console.log(d);
+  }
+
+  var legend = svg1.selectAll(".legend")
+      .data(Object.keys(colorArray))
+    .enter().append("g")
+      .attr("class", "legend")
+      //.attr("d",d3.svg.symbol().type(function(d){return shapeArray[d];}))
+      /*.attr("x",width-60)
+      .attr("width",15)
+      .attr("height",15)
+      .style("fill", "none")
+      .style("stroke",function(d){return colorArray[d];})*/
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+      
+	console.log(Object.keys(colorArray));
+
+
+  
+  legend.append("rect")
+      .attr("x", width - 100)
+      .attr("y",15)
+      .attr("width", 15)
+      .attr("height", 15)
+      .style("fill", function(d){console.log(d);return colorArray[d];});
+      
+
+
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 20)
+      .attr("dy", ".45em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
+
+});
+
+
+
+d3.tsv("iris.tsv", function(error, sepalData){
+  if (error) throw error;
+
+//+ sign is used for changing the string to numeric values
+  sepalData.forEach(function(d) {
+    console.log(d);
+    d.sepalLength = +d.sepalLength;
+    d.sepalWidth = +d.sepalWidth;
+  });
+
+
+  x.domain(d3.extent(sepalData, function(d) { return d.sepalLength; })).nice();
+  //y.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+  y.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+
+  svg2.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Sepal Length (cm)");
+
+//to remove the ticks
+ 
+//  svg.selectAll(".tick")
+//    .each(function (d) {
+//        if ( d == 0 ) {
+//            this.remove();
+//        }
+//    });
+   
+  svg2.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Sepal Width (cm)")
+
+  svg2.selectAll(".dot")
+      .data(sepalData)
+    .enter().append("path")
+    .attr("d", d3.svg.symbol().size( function(d) { return 3*Math.pow(d.sepalLength,2) ;}).type(function(d){
+        		return shapeArray[d.species];
+    	}))
+    .style("fill","none")
+    .style("stroke",function(d){return colorArray[d.species];})
+    .attr("transform", function(d) { return "translate(" + x(d.sepalLength) + "," + y(d.sepalWidth) + ")"; });
+    
+  
+  function legendAttributes(d)
+  {
+  	console.log("legend");
+  	console.log(d);
+  }
+
+  var legend = svg2.selectAll(".legend")
+      .data(Object.keys(colorArray))
+    .enter().append("g")
+      .attr("class", "legend")
+      //.attr("d",d3.svg.symbol().type(function(d){return shapeArray[d];}))
+      /*.attr("x",width-60)
+      .attr("width",15)
+      .attr("height",15)
+      .style("fill", "none")
+      .style("stroke",function(d){return colorArray[d];})*/
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+      
+	console.log(Object.keys(colorArray));
+
+
+  
+  legend.append("rect")
+      .attr("x", width - 100)
+      .attr("y",15)
+      .attr("width", 15)
+      .attr("height", 15)
+      .style("fill", function(d){console.log(d);return colorArray[d];});
+      
+
+
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 20)
+      .attr("dy", ".45em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
+
+});
+
+
+
+d3.tsv("iris.tsv", function(error, sepalData){
+  if (error) throw error;
+
+//+ sign is used for changing the string to numeric values
+  sepalData.forEach(function(d) {
+    console.log(d);
+    d.sepalLength = +d.sepalLength;
+    d.sepalWidth = +d.sepalWidth;
+  });
+
+
+  xsquareroot.domain(d3.extent(sepalData, function(d) { return d.sepalLength; })).nice();
+  //y.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+  ysquareroot.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+
+  svg3.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxissquareroot)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Sepal Length (cm)");
+
+//to remove the ticks
+ 
+//  svg.selectAll(".tick")
+//    .each(function (d) {
+//        if ( d == 0 ) {
+//            this.remove();
+//        }
+//    });
+   
+  svg3.append("g")
+      .attr("class", "y axis")
+      .call(yAxissquareroot)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Sepal Width (cm)")
+
+  svg3.selectAll(".dot")
+      .data(sepalData)
+    .enter().append("path")
+    .attr("d", d3.svg.symbol().size( function(d) { return 30 ;}).type(function(d){
+        		return shapeArray[d.species];
+    	}))
+    .style("fill","none")
+    .style("stroke",function(d){return colorArray[d.species];})
+    .attr("transform", function(d) { return "translate(" + xsquareroot(d.sepalLength) + "," + ysquareroot(d.sepalWidth) + ")"; });
+    
+  
+  function legendAttributes(d)
+  {
+  	console.log("legend");
+  	console.log(d);
+  }
+
+  var legend = svg3.selectAll(".legend")
+      .data(Object.keys(colorArray))
+    .enter().append("g")
+      .attr("class", "legend")
+      //.attr("d",d3.svg.symbol().type(function(d){return shapeArray[d];}))
+      /*.attr("x",width-60)
+      .attr("width",15)
+      .attr("height",15)
+      .style("fill", "none")
+      .style("stroke",function(d){return colorArray[d];})*/
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+      
+	console.log(Object.keys(colorArray));
+
+
+  
+  legend.append("rect")
+      .attr("x", width - 100)
+      .attr("y",15)
+      .attr("width", 15)
+      .attr("height", 15)
+      .style("fill", function(d){console.log(d);return colorArray[d];});
+      
+
+
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 20)
+      .attr("dy", ".45em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
+
+});
+
+
+
+d3.tsv("iris.tsv", function(error, sepalData){
+  if (error) throw error;
+
+//+ sign is used for changing the string to numeric values
+  sepalData.forEach(function(d) {
+    console.log(d);
+    d.sepalLength = +d.sepalLength;
+    d.sepalWidth = +d.sepalWidth;
+  });
+
+
+  xlog.domain(d3.extent(sepalData, function(d) { return d.sepalLength; })).nice();
+  //y.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+  ylog.domain(d3.extent(sepalData, function(d) { return d.sepalWidth; })).nice();
+
+  svg4.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxislog)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Sepal Length (cm)");
+
+//to remove the ticks
+ 
+//  svg.selectAll(".tick")
+//    .each(function (d) {
+//        if ( d == 0 ) {
+//            this.remove();
+//        }
+//    });
+   
+  svg4.append("g")
+      .attr("class", "y axis")
+      .call(yAxislog)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Sepal Width (cm)")
+
+  svg4.selectAll(".dot")
+      .data(sepalData)
+    .enter().append("path")
+    .attr("d", d3.svg.symbol().size( function(d) { return 30 ;}).type(function(d){
+        		return shapeArray[d.species];
+    	}))
+    .style("fill","none")
+    .style("stroke",function(d){return colorArray[d.species];})
+    .attr("transform", function(d) { return "translate(" + xlog(d.sepalLength) + "," + ylog(d.sepalWidth) + ")"; });
+    
+  
+  function legendAttributes(d)
+  {
+  	console.log("legend");
+  	console.log(d);
+  }
+
+  var legend = svg4.selectAll(".legend")
+      .data(Object.keys(colorArray))
+    .enter().append("g")
+      .attr("class", "legend")
+      //.attr("d",d3.svg.symbol().type(function(d){return shapeArray[d];}))
+      /*.attr("x",width-60)
+      .attr("width",15)
+      .attr("height",15)
+      .style("fill", "none")
+      .style("stroke",function(d){return colorArray[d];})*/
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+      
+	console.log(Object.keys(colorArray));
+
+
+  
+  legend.append("rect")
+      .attr("x", width - 100)
+      .attr("y",15)
+      .attr("width", 15)
+      .attr("height", 15)
+      .style("fill", function(d){console.log(d);return colorArray[d];});
+      
+
+
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 20)
+      .attr("dy", ".45em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
+
+});
+</script>
+</body>
+</html>

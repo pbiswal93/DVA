@@ -1,0 +1,4 @@
+c ii) Used scaling the node linearly because node degrees vary from 1 to 9.
+Thus all nodes with different degree get different size.
+e.g. - (degree 1 -size 4), ... (degree 9 - size 13)
+Using square root will map nodes of different degrees to same size.

@@ -1,0 +1,11 @@
+College selection parameters  - Tution, Earning, SAT Scores, Grants.
+
+We plot 3 graphs with tooltip on hovering over a .
+
+1. Median Earning vs. Tution - represents the most important factor, "the return of investment".
+
+2. SAT Scores vs. Tution - Helps to find a college with optimal tution based on your SAT score.
+
+3. Grants vs. Tution - An important criterion; because suppose the tution is high and 95% people get grants, it is worth applying to.
+
+Thus, based on our graphs, a student can make a sound choice for college.

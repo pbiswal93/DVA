@@ -1,0 +1,15 @@
+1 a ) Year -2005
+
+   i)Changed the title of column to Total Population(Refugees) because only Total Population was confusing.
+   ii) Added columns country and origin because only year and population were ambiguous.
+   iii) Grouped rows on basis of country of asylum.
+   iv) Made the headings(Year, origin etc.) bold and larger font to distinguish.
+   v) Center-aligned year, country and origin ; right-aligned total population(numeric) for better readability.
+   
+   
+1 b) Visualised Country, Total male refugees, total female refugees in year 2010. 
+
+Design Rationale - 
+	
+	i) Used square instead of bars to show very small values(for e.g. 823).
+	ii) Sorted in descending order with total number of refugees from a country to list the countries most afftected first.

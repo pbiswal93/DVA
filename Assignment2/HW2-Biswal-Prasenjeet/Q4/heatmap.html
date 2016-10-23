@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+svg {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+</style>
+<body>
+
+<script src="../lib/d3.v3.min.js"></script>
+<script>
+
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var daysArray=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+var x = d3.scale.linear( ).rangeRound([0, width-40]);
+var x1 = d3.scale.linear( ).rangeRound([0, width-40]);
+var y = d3.scale.linear().rangeRound([height, 0]);
+var y1 = d3.scale.linear().rangeRound([height, 0]);
+var z = d3.scale.linear().range(["white", "steelblue"]);
+var z1 = d3.scale.linear().range(["white", "steelblue"]);
+    //.domain([0, 160])
+var xAxis = d3.svg.axis().scale(x).orient("bottom");
+var xAxis1 = d3.svg.axis().scale(x1).orient("bottom").tickFormat(function(d, i){return daysArray[i]});
+
+
+var yAxis = d3.svg.axis().scale(y).orient("left");
+var yAxis1 = d3.svg.axis().scale(y1).orient("left");
+
+var svg = d3.select("body").append("svg")
+    	    .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+            svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 5 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .text("Glucose concentration over hour");
+
+var svg1 = d3.select("body").append("svg")
+    	    .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+                        svg1.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 5 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .text("Glucose concentration over days");
+
+d3.json("hourly_heatmap.json", function(error, data) {
+
+var keyArray=[];
+var maxArray=[];
+var minArray=[]; 
+
+  x.domain([0,24]);// we have only 24 hours in a day
+  
+  //console.log(typeof(data[0].values));
+  //console.log(data.length);
+  for(i=0;i<data.length;i++)
+  {
+  	keyArray.push(data[i].key);
+  	maxArray.push(Math.max.apply(this,data[i].values)); //max.apply converts the objects to numbers
+  	minArray.push(Math.min.apply(this,data[i].values))
+  }
+  console.log(maxArray);
+  y.domain(d3.extent(keyArray, function(d) { return d; })).nice();
+  var a=[0,Math.max(maxArray)];
+  console.log(Math.max(maxArray));
+  z.domain([0,Math.max.apply(this,maxArray)]);
+  
+/*  for(i=0;i<data.length;i++)
+  {
+  	keyArray.push(data[i].key);
+  	maxArray.push(Math.max(data[i]));
+  	minArray.push(Math.min(data[i]))
+  }
+*/
+//  y.domain(d3.extent())
+  
+  //console.log(data[0]);  - 
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+      .append("text")
+      //.attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Hours");
+
+  //have to keep the y axis down because the heatmap is gettiing printed on top that.
+  
+  var heatmap = svg.selectAll(".heatmap")
+      .data(data)
+    .enter( ).append("g")
+      //.attr("class", "glucose")
+      ;
+      
+  heatmap.selectAll(".row")
+      .data(function (d) { //console.log(d.values); - array of arrays first array values corrspond to first key 50 - [6, 0, 10, 12, 5, 20, 39, 26, 37, 21, 7, 4, 0, 2, 0, 7, 1, 1, 12, 3, 1, 5, 4, 8]
+      						return d.values; })
+    .enter( ).append("rect")
+      .attr("class", "row")
+      .attr("x", function (d, i) { return x(i); })
+      .attr("width", function (d, i) { //console.log(x(i+1)-x(i)); // gets the range of values, checked 1 hour corresponds to 37 or 38 pixels
+      									return  x(i+1)-x(i); })
+      .style("fill", function(d) { return z(d); });
+      
+  heatmap.each(function (d) {
+    d3.select(this).selectAll(".row")
+        .attr("y", y(d.key)-11 )
+        .attr("height", 11 );
+  });
+  
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+      .append("text")
+      .attr("class", "label")
+	  .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Glucose Level in blood");
+      
+  var legend = svg.selectAll(".legend")
+    .data(z.ticks().reverse()).attr("y", height+margin.right-30)
+    .enter()
+    .append("g")
+        .attr({
+            'class': 'legend',
+            'transform': function(d, i) {
+                return "translate(" + (width -25) + "," + (5 + i * 15) + ")";
+            }
+        });
+
+  legend.append("rect")
+      .attr("width", 25)
+      .attr("height", 25)
+      .style("fill", z);
+
+  legend.append("text")
+      .attr("x", 26)
+      .attr("y", 7)
+      .attr("dx",".25em")
+      .attr("dy", ".10em")
+      .text(String);
+
+  
+});
+
+
+
+d3.json("day_heatmap.json", function(error, data) {
+
+var keyArray=[];
+var maxArray=[];
+var minArray=[];
+ 
+
+  x1.domain([0,7]);// we have only 7 days in a week
+  
+  //console.log(typeof(data[0].values));
+  //console.log(data.length);
+  for(i=0;i<data.length;i++)
+  {
+  	keyArray.push(data[i].key);
+  	maxArray.push(Math.max.apply(this,data[i].values)); //max.apply converts the objects to numbers
+  	minArray.push(Math.min.apply(this,data[i].values)); //not required
+  }
+  //console.log(maxArray);
+  y1.domain(d3.extent(keyArray, function(d) { return d; })).nice();
+ 
+ // console.log(Math.max(maxArray));
+  z1.domain([0,Math.max.apply(this,maxArray)]);
+  
+/*  for(i=0;i<data.length;i++)
+  {
+  	keyArray.push(data[i].key);
+  	maxArray.push(Math.max(data[i]));
+  	minArray.push(Math.min(data[i]))
+  }
+*/
+//  y.domain(d3.extent())
+  
+  //console.log(data[0]);  - 
+  svg1.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis1)
+      .append("text")
+      //.attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("days");
+
+  //have to keep the y axis down because the heatmap is gettiing printed on top that.
+  
+  var heatmap = svg1.selectAll(".heatmap")
+      .data(data)
+    .enter( ).append("g")
+      //.attr("class", "glucose")
+      ;
+      
+  heatmap.selectAll(".row")
+      .data(function (d) { //console.log(d.values); - array of arrays first array values corrspond to first key 50 - [6, 0, 10, 12, 5, 20, 39, 26, 37, 21, 7, 4, 0, 2, 0, 7, 1, 1, 12, 3, 1, 5, 4, 8]
+      						return d.values; })
+    .enter( ).append("rect")
+      .attr("class", "row")
+      .attr("x", function (d, i) { return x1(i); })
+      .attr("width", function (d, i) { //console.log(x(i+1)-x(i)); // gets the range of values, checked 1 hour corresponds to 37 or 38 pixels
+      									return  x1(i+1)-x1(i); })
+      .style("fill", function(d) { return z1(d); });
+      
+  heatmap.each(function (d) {
+    d3.select(this).selectAll(".row")
+        .attr("y", y1(d.key)-11 )
+        .attr("height", 11 );
+  });
+  
+  svg1.append("g")
+      .attr("class", "y axis")
+      .call(yAxis1)
+      .append("text")
+      .attr("class", "label")
+	  .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Glucose Level in blood");
+      
+  var legend = svg1.selectAll(".legend")
+    .data(z1.ticks().reverse()).attr("y", height+margin.right-30)
+    .enter()
+    .append("g")
+        .attr({
+            'class': 'legend',
+            'transform': function(d, i) {
+                //return "translate(" + (i * 30) + "," + (20+i*20) + ")";
+                return "translate(" + (width -25) + "," + (5 + i * 15) + ")";
+            }
+        });
+
+  legend.append("rect")
+      .attr("width", 25)
+      .attr("height", 25)
+      .style("fill", z);
+
+  legend.append("text")
+      .attr("x", 26)
+      .attr("y", 7)
+      .attr("dx",".25em")
+      .attr("dy", ".10em")
+      .text(String);
+
+  
+});
+
+</script>

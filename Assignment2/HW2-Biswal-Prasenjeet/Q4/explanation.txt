@@ -1,0 +1,9 @@
+Trends from hourly glucose map -
+
+	a. The glucose values follow cyclic pattern and reach peaks(around 325) at 5 in morning and 5-6 in evening and at late night. The count of peak values is low.
+	b. For most people, value reaches around 100 - 150  at breakfast  (7 am to 10 am) and dinner (5 pm to 8 pm) because food contains glucose.
+	
+Trends from weekly glucose map -
+	
+	a. The number of people with same glucose concentration rises on weekends.
+	b. Most of people have glucose concentration between ~(70 and 160) daywise.
